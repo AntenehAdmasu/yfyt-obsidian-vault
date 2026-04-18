@@ -1,0 +1,5 @@
+.obsidian/workspace*
+.trash/
+
+# Stray file in vault root (not the Obsidian application bundle)
+Obsidian.app
