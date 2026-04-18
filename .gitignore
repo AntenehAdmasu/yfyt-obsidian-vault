@@ -3,3 +3,6 @@
 
 # Stray file in vault root (not the Obsidian application bundle)
 Obsidian.app
+
+# Git object database (this vault uses a separate git directory)
+.git-vault/
