@@ -22,7 +22,9 @@ Ideas and temptations that arise mid-phase but do not belong to the current phas
 
 ## Interesting-but-not-now ideas
 
-<!-- Add temptations here as they arise during each phase -->
+- **Ticker knowledge base** — persistent per-ticker notes in DB. Short dated entries ("AAPL: product launch May 2026", "AMZN: antitrust suit ongoing"). Auto-expire stale entries. Feed into signal prompts so Claude knows what's happening beyond price action. Living memory per ticker that builds over time.
+
+- **Weekly pool re-evaluation** — auto-review the base ticker universe (~50 stocks) weekly. Detect stale tickers (no setups for 2+ weeks) and trending mid-caps gaining momentum. Suggest swaps to keep the universe fresh without manual curation.
 
 ---
 

@@ -229,6 +229,65 @@ Modified file: `app/api/wingman/signal/route.ts`
 
 ---
 
+## Continued April 22 — afternoon session
+
+### 8. Risk dashboard UI built
+
+New component: `components/wingman/RiskDashboard.tsx`
+
+Placed in the Wingman signal panel between the header and signal card. Shows:
+- **3-column stat strip:** Portfolio value, Today's P&L (with color), Trades used (x/5)
+- **Daily loss progress bar:** Fills as losses accumulate. Color shifts green → amber → red. Shows remaining headroom in dollars ("$150 remaining").
+- **Quick stats row:** Cash balance, open position count
+- **Risk Rules section (collapsible):** All 8 rules with current values. Note that sizing is off current equity.
+- **Kill switch / blocked banner:** Red alert when daily loss limit or trade limit is hit.
+
+Updates live after each trade via `refreshPortfolioState()`.
+
+`app/wingman/page.tsx` modified:
+- Added portfolio state tracking: `portfolioValue`, `dailyPnL`, `todaysTradeCount`, `openPositionCount`
+- Added `refreshPortfolioState()` callback — reads portfolio, calculates equity, counts today's trades, computes unrealized P&L
+- Trade handler now calls `refreshPortfolioState()` after execution
+- Imported and placed `RiskDashboard` in signal panel
+
+### 9. Screener parameter deep-dive
+
+Anti reviewed all 5 screener filter parameters. Key findings and decisions:
+
+**Lookback periods and manipulation resistance:**
+- 20-day averages (volume, highs/lows) are hard to manipulate — need weeks of fake activity
+- 14-period RSI and 20/50 SMAs are inherently smoothed
+- Gap filter (1-day event) is the most susceptible to manipulation — should require volume confirmation
+- General rule: longer lookback = harder to fake, but less responsive. 20 days is the swing trading sweet spot
+
+**Parameter assessment:**
+| Parameter | Value | Verdict |
+|---|---|---|
+| Volume > 1.5x 20d avg | Conservative but sensible for multi-filter system | Keep, may tune to 2x if too noisy |
+| Gap > 1% | Flat % doesn't account for per-stock volatility | Consider upgrading to ATR-normalised gaps later |
+| RSI 30/70 | Textbook Wilder thresholds, universally accepted | Keep |
+| SMA proximity 1% | Reasonable for "in the zone" detection | Keep |
+| New 20-day high/low | Standard for swing trading breakouts | Keep |
+
+**Gap + volume safeguard proposed:** Gap filter should only trigger if today's volume is also ≥ 1x average (not below normal). Prevents counting low-volume fake gaps. Not yet implemented.
+
+**Adaptive expansion agreed:** If fewer than 15 candidates pass strict filters, progressively relax thresholds (e.g. volume 1.5x → 1.3x, gap 1% → 0.7%) up to 3 rounds. Guarantees Claude always has enough candidates. Not yet implemented.
+
+**Other algorithmic approaches discussed for future:**
+1. Relative strength vs SPY (Mansfield method) — stocks outperforming the market
+2. ATR expansion — volatility increasing, stock "waking up"
+3. Pre-market movers — from Alpaca, overnight/early morning activity
+4. Sector rotation scan — identify hot sectors first, then pick strongest stocks within
+5. Consolidation breakout detection — narrowing Bollinger Bands / volatility squeeze
+6. Unusual options activity — leading indicator (needs paid data feed)
+
+### 10. Parking lot additions
+
+Added to both `plan/parking-lot.md` and Obsidian `20-features/parking-lot.md`:
+- **Weekly pool re-evaluation** — auto-review the base ticker universe weekly. Detect stale tickers (no setups for 2+ weeks) and trending mid-caps gaining momentum. Suggest swaps.
+
+---
+
 ## Architecture overview (as of April 22)
 
 ```
