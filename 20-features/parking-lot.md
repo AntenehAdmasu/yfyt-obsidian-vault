@@ -26,6 +26,8 @@ Ideas and temptations that arise mid-phase but do not belong to the current phas
 
 - **Weekly pool re-evaluation** — auto-review the base ticker universe (~50 stocks) weekly. Detect stale tickers (no setups for 2+ weeks) and trending mid-caps gaining momentum. Suggest swaps to keep the universe fresh without manual curation.
 
+See also: [[strategy-tuning]] — dedicated file for screener filter improvements and algorithmic approaches.
+
 ---
 
 *Ground rule: out-of-scope ideas go here, not into the sprint. See [[scope]] for what's in/out.*
