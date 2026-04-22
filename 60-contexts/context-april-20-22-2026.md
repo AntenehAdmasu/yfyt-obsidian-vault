@@ -187,41 +187,96 @@ Modified file: `app/api/wingman/signal/route.ts`
 
 ---
 
+### 11. Pass 2 Claude ranking built (mocked)
+
+New file: `lib/screener-ranking.ts`
+
+- `RankedTickerSchema` — Zod schema: rank, setup quality (A/B/C), entry zone (low/high), thesis, trap flag + reason
+- `RankingOutputSchema` — top picks array, market bias, market note, skipped count
+- `RANKING_SYSTEM_PROMPT` — full system prompt for ranking with methodology, trap detection, JSON output
+- `buildRankingPrompt()` — assembles candidates + market context + open positions into user prompt
+- `rankWithClaude()` — real Claude call (commented out, ready to uncomment when API key is live)
+- `mockRankCandidates()` — deterministic mock: scores, sorts, assigns entry zones/theses, flags traps, determines market bias
+
+Screener route (`app/api/wingman/screener/route.ts`) updated to run full Pass 1 → Pass 2 pipeline. Accepts `openPositions` to exclude held tickers. `skipPass2` flag for code-filters-only mode.
+
+### 12. Market clock UI built
+
+New component: `components/wingman/MarketClock.tsx`
+
+Placed in Wingman top bar between refresh button and cash display:
+- Green pulsing dot + "Market Open" during 9:30 AM - 4:00 PM ET with countdown to close
+- Amber dot + "Pre-Market" before 9:30 AM with countdown to open
+- Grey dot + "After Hours" / "Weekend" with countdown to next open
+- Shows local time with timezone abbreviation (e.g. "21:45 BST")
+- Updates every 15 seconds
+
+### 13. Strategy tuning parking lot created
+
+New file: `plan/strategy-tuning.md` (+ Obsidian copy at `20-features/strategy-tuning.md`)
+
+Dedicated file for screener and signal refinement ideas:
+- ATR-normalised gaps (replace flat 1%)
+- Tiered ticker pool expansion (expand search, never relax thresholds)
+- Confidence scoring for when too many candidates pass
+- 6 algorithmic approaches: relative strength vs SPY, ATR expansion, pre-market movers, sector rotation, volatility squeeze, unusual options activity
+- Weekly pool re-evaluation idea also parked here
+
+### 14. Gap + volume safeguard implemented
+
+`lib/screener.ts` updated: gap filter now requires today's volume ≥ 1x average. A gap on below-average volume is flagged `(low vol)` and doesn't pass. Prevents counting manipulation or thin-liquidity fake gaps.
+
+### 15. CLAUDE.md updated for context persistence
+
+`CLAUDE.md` now instructs Claude to read the latest context file from `contexts/` when starting a new session or recovering from compaction. Lists key project files for fast orientation.
+
+---
+
 ## Files created/modified April 20-22
 
 | File | Change |
 |---|---|
-| `lib/screener.ts` | NEW — morning screener filters, stub data, 51-ticker universe |
+| `lib/screener.ts` | NEW — morning screener filters, stub data, 51-ticker universe, gap+vol safeguard |
+| `lib/screener-ranking.ts` | NEW — Pass 2 ranking prompt, schema, mock ranker |
 | `lib/prompt-builder.ts` | NEW — enriched prompt builder (Layers 3-5) |
 | `lib/signal-schema.ts` | MODIFIED — risk engine upgrades (RiskConfig, TradingState, kill switch, stacking, market hours) |
 | `app/api/wingman/signal/route.ts` | MODIFIED — pre-signal checks, enriched prompt, configurable risk |
-| `app/api/wingman/screener/route.ts` | NEW — screener API endpoint |
+| `app/api/wingman/screener/route.ts` | NEW → MODIFIED — full Pass 1 → Pass 2 pipeline |
+| `app/wingman/page.tsx` | MODIFIED — RiskDashboard, MarketClock, portfolio state tracking |
+| `components/wingman/RiskDashboard.tsx` | NEW — risk enforcement stats, progress bar, rules panel |
+| `components/wingman/MarketClock.tsx` | NEW — market open/closed status, countdown, local time |
 | `docs/signal-strategy.md` | NEW — canonical signal architecture document |
+| `plan/strategy-tuning.md` | NEW — screener/signal refinement parking lot |
+| `plan/parking-lot.md` | MODIFIED — added weekly pool re-eval, cross-ref to strategy-tuning |
 | `temp-plan/signal-generation-design.html` | MODIFIED — fixed formatting, updated to match approved strategy |
+| `CLAUDE.md` | MODIFIED — context persistence instructions, key file list |
 | `contexts/context-april-20-22-2026.md` | NEW — this file |
 
 ---
 
 ## What to do next session
 
-### Still pending from Anti
-1. Review database schema in `temp-plan/database.md` — answer 4 open questions
-2. Fix Alpaca Markets signup (try different email)
-3. Rotate Anthropic API key (was shared in chat)
-4. Review risk engine rules and system prompt
-5. Draft starting watchlist (30-50 tickers) — default 51-ticker universe is in place as fallback
+### Pending from Anti (external setup)
+1. Rotate Anthropic API key — [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys)
+2. Fix Alpaca Markets signup (try different email) — need API key + secret
+3. Review database schema in `temp-plan/database.md` — answer 4 open questions
+4. Create Supabase tables — Claude builds migration once schema is approved
 
-### Build tasks remaining for Phase 1
-1. **Supabase schema + auth** — create tables, wire up client (blocked on Anti's review)
-2. **Replace MOCK_STOCKS** with real ticker search or the screener universe
-3. **Wire CandleChart to real data** — pass real candles from signal API to the chart component
-4. **Trade execution with live prices** — use Alpha Vantage current price instead of mock
-5. **Portfolio P&L with live prices** — same
-6. **Wire screener to Alpaca** — swap stub data for real market data (blocked on Alpaca signup)
-7. **Wire Layer 3 to real data** — fetch SPY/QQQ/VIX snapshots, news headlines, earnings dates
-8. **Wire Layer 5 to Supabase** — query past signals for the ticker (blocked on database)
-9. **Monitoring loop** — 15-min price check service with entry zone detection
-10. **End-of-day summary** — daily performance recap generator
+### Build tasks — no external dependencies (do these first)
+1. **Replace MOCK_STOCKS** with the 51-ticker screener universe
+2. **Wire CandleChart to real candle data** — signal API already returns OHLCV, pass it to chart
+3. **Send portfolio state to signal route** — so dynamic sizing actually works (not defaults)
+4. **Screener UI** — page or panel to trigger morning screener, see Pass 1 + Pass 2 results
+5. **Monitoring loop skeleton** — 15-min price checks, entry zone detection, stop conditions (stub prices)
+6. **End-of-day summary template** — daily performance recap generator
+
+### Build tasks — blocked on external setup
+7. **Wire screener to Alpaca** — swap stub data for real market data (blocked on #2)
+8. **Wire Layer 3 to real data** — SPY/QQQ/VIX snapshots, news headlines, earnings dates (blocked on #2)
+9. **Supabase schema + auth** — create tables, wire client (blocked on #3/#4)
+10. **Wire Layer 5 to Supabase** — past signals per ticker (blocked on #9)
+11. **Trade execution with live prices** — needs Alpaca or Alpha Vantage current price (blocked on #2)
+12. **Flip Pass 2 to real Claude** — uncomment `rankWithClaude()`, remove mock (blocked on #1)
 11. **End-to-end testing** — 10 full cycles to pass Phase 1 gate
 
 ### Phase 1 gate reminder
