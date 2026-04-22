@@ -19,3 +19,5 @@ At the end of each Claude Code session (or when context limits are approached), 
 - [[context-april-15-2026]] — UI polish, collapsible sidebar, chart fixes, slides deck
 - [[context-april-16-17-2026]] — Model lock to Opus 4.6, Elsh joins, 4-phase roadmap, full UI redesign, dark/light theme
 - [[context-april-18-2026]] — API keys setup, end-to-end test run, trading targets agreed, Phase 1 breakdown, design docs
+- [[context-april-19-2026]] — Real signal generation built end-to-end, Obsidian vault populated, Wingman UI wired to Claude Opus 4.6
+- [[context-april-20-22-2026]] — Signal strategy finalised, morning screener built, enriched prompt (Layers 3-5), risk engine upgraded with kill switch + dynamic sizing
