@@ -21,3 +21,4 @@ At the end of each Claude Code session (or when context limits are approached), 
 - [[context-april-18-2026]] — API keys setup, end-to-end test run, trading targets agreed, Phase 1 breakdown, design docs
 - [[context-april-19-2026]] — Real signal generation built end-to-end, Obsidian vault populated, Wingman UI wired to Claude Opus 4.6
 - [[context-april-20-22-2026]] — Signal strategy finalised, morning screener built, enriched prompt (Layers 3-5), risk engine upgraded with kill switch + dynamic sizing
+- [[context-april-23-2026]] — Supabase wired, screener UI, 51-ticker universe, Pass 2 live Claude, Layer 5 Supabase, EOD summary, portfolio page updated
